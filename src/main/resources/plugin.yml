@@ -1,0 +1,34 @@
+name: PersonaChat
+version: "1.0"
+main: com.tinysx.personachat.PersonaChat
+api-version: '1.20'
+description: Advanced Persona 3D/2D Floating Chat System with Profile Cosmetics, Modular Packs, and Still-State History Scrolling.
+author: TiNYsx
+website: https://www.spigotmc.org/members/jirwat.457182/
+softdepend:
+  - PlaceholderAPI
+
+commands:
+  personachat:
+    description: Main command for PersonaChat floating display and profile cosmetics
+    aliases: [pc, floatingchat, fc, chatdisplay, cd]
+    usage: /personachat <menu|toggle|on|off|equip|unequip|reload>
+    permission: personachat.use
+  headd:
+    description: Debug command to preview a player head display
+    usage: /headd [player] [2d|3d|clear]
+    permission: personachat.admin
+
+permissions:
+  personachat.use:
+    description: Allows using PersonaChat floating chat and personal cosmetic features
+    default: true
+  personachat.menu:
+    description: Allows opening the Profile Cosmetics GUI
+    default: true
+  personachat.reload:
+    description: Allows reloading PersonaChat configurations, cosmetics, and packs
+    default: op
+  personachat.admin:
+    description: Full administrative access
+    default: op

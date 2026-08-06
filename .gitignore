@@ -1,0 +1,39 @@
+# Gradle / Build Outputs
+build/
+.gradle/
+bin/
+out/
+target/
+*.jar
+*.class
+*.war
+*.ear
+
+# IDE & Editor Files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+*.sublime-project
+*.sublime-workspace
+
+# Operating System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Logs & Temporary Files
+*.log
+*.tmp
+*.bak
+*.swp
+*~

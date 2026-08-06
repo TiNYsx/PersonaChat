@@ -1,0 +1,23 @@
+# Set default behavior to automatically normalize line endings.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.java text diff=java
+*.yml text
+*.yaml text
+*.json text
+*.md text
+*.gradle.kts text
+*.ps1 text eol=crlf
+*.sh text eol=lf
+
+# Declare files that will always have CRLF line endings on checkout.
+*.bat text eol=crlf
+
+# Denote all binary files that should not be modified by Git.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.jar binary

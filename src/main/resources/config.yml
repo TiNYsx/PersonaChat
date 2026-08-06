@@ -1,0 +1,109 @@
+# ============================================
+# PersonaChat - Configuration
+# Cinematic World-Space Floating Chat & Profile Cosmetics
+# ============================================
+
+chat-display:
+
+  # Whether the floating chat is enabled by default for new players
+  enabled-by-default: true
+
+  # Maximum number of chat messages to display at once in the active view
+  max-messages: 10
+
+  # Maximum characters per line before text wraps to next line
+  line-length: 40
+
+  # How many seconds a message stays visible in the world (0 = never expires)
+  message-lifetime-seconds: 30
+  
+  # ============================================
+  # DISPLAY MODE & SCROLLING
+  # ============================================
+  
+  # When should the chat panel be visible?
+  # ALWAYS: Show chat all the time (can be toggled via /pc toggle)
+  # STANDING_STILL: Hide chat when the player is walking/moving, show when standing still
+  display-mode: "ALWAYS"
+  
+  # How many ticks to wait after stopping before enabling chat & mouse-wheel hotbar scrolling
+  # (20 ticks = 1 second)
+  still-time-ticks: 5
+
+  # ============================================
+  # POSITIONING
+  # ============================================
+  forward-distance: 0.5
+  left-offset: 0
+  vertical-offset: 0
+
+  # Vertical spacing between text lines within a message (blocks)
+  line-spacing: 0
+
+  # Extra gap between separate messages (blocks)
+  message-gap: 0.1
+
+  # ============================================
+  # MATHEMATICAL LAYOUT (ADVANCED)
+  # ============================================
+  # Variables: 'i' = message index, 't' = server time, 'l' = message lifetime, 'r' = random value
+  math-offset-right: "0"
+  math-offset-up: "0"
+  math-offset-forward: "0"
+
+  # ============================================
+  # PANEL ROTATION (DEGREES)
+  # ============================================
+  panel-roll: "0.0"
+  panel-pitch: "0.0"
+  panel-yaw: "0.0"
+  
+  # Independent Head Rotations
+  head-yaw: "0.0"
+  head-pitch: "0.0"
+  head-roll: "0.0"
+
+  # ============================================
+  # APPEARANCE & SOUNDS
+  # ============================================
+
+  # Head rendering mode (2D_HALF_BODY, 2D_FLAT, 3D_BLOCK)
+  head-model-type: "2D_HALF_BODY"
+
+  # Scale of the chat text
+  text-scale: "0.1"
+
+  # Scale of the player avatar/head
+  head-scale: "0.1"
+
+  # How far left the avatar is offset from the text (blocks)
+  head-left-offset: "0.1"
+
+  # Vertical offset of the avatar relative to the text line (blocks)
+  head-vertical-offset: "0"
+
+  # Background opacity behind text (0 = transparent, 255 = fully opaque)
+  background-opacity: "80"
+
+  # Format for Name and Message Display.
+  # Supports PlaceholderAPI, Font Glyphs/Unicode, and {badge}, {player}, {message}!
+  name-format: "{badge}%player_level% {player}"
+  message-format: "{message}"
+
+  # Text Alignment (LEFT, CENTER, RIGHT)
+  name-alignment: "LEFT"
+  message-alignment: "LEFT"
+
+  # Player default name & message colors (hex color code)
+  name-color: "#FFFF55"
+  message-color: "#FFFFFF"
+
+  # Sound to play when a message pops up (e.g. "UI_BUTTON_CLICK", "BLOCK_NOTE_BLOCK_BELL")
+  sound-effect: ""
+  sound-volume: 1.0
+  sound-pitch: "1.0"
+
+  # ============================================
+  # PERFORMANCE
+  # ============================================
+  update-ticks: 3
