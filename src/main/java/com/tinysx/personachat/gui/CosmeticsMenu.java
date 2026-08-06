@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -35,8 +36,28 @@ public class CosmeticsMenu implements Listener {
         this.cosmeticManager = cosmeticManager;
     }
 
+    public static class MainMenuHolder implements org.bukkit.inventory.InventoryHolder {
+        private Inventory inventory;
+        @Override
+        public @NotNull Inventory getInventory() { return inventory; }
+        public void setInventory(Inventory inventory) { this.inventory = inventory; }
+    }
+
+    public static class CategoryMenuHolder implements org.bukkit.inventory.InventoryHolder {
+        private final CosmeticType type;
+        private Inventory inventory;
+        public CategoryMenuHolder(CosmeticType type) { this.type = type; }
+        public CosmeticType getType() { return type; }
+        @Override
+        public @NotNull Inventory getInventory() { return inventory; }
+        public void setInventory(Inventory inventory) { this.inventory = inventory; }
+    }
+
     public void openMainMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 36, Component.text(MAIN_TITLE));
+        MainMenuHolder holder = new MainMenuHolder();
+        Inventory inv = Bukkit.createInventory(holder, 36, Component.text(MAIN_TITLE));
+        holder.setInventory(inv);
+
         ItemStack glass = createItem(Material.GRAY_STAINED_GLASS_PANE, "§7");
         for (int i = 0; i < 36; i++) {
             inv.setItem(i, glass);
@@ -89,7 +110,10 @@ public class CosmeticsMenu implements Listener {
     }
 
     public void openCategoryMenu(Player player, CosmeticType type) {
-        Inventory inv = Bukkit.createInventory(null, 45, Component.text(CATEGORY_TITLE_PREFIX + type.getDisplayName()));
+        CategoryMenuHolder holder = new CategoryMenuHolder(type);
+        Inventory inv = Bukkit.createInventory(holder, 45, Component.text(CATEGORY_TITLE_PREFIX + type.getDisplayName()));
+        holder.setInventory(inv);
+
         ItemStack glass = createItem(Material.GRAY_STAINED_GLASS_PANE, "§7");
         for (int i = 0; i < 45; i++) {
             inv.setItem(i, glass);
@@ -152,11 +176,18 @@ public class CosmeticsMenu implements Listener {
     }
 
     @EventHandler
+    public void onInventoryDrag(org.bukkit.event.inventory.InventoryDragEvent e) {
+        if (e.getInventory().getHolder() instanceof MainMenuHolder || e.getInventory().getHolder() instanceof CategoryMenuHolder) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player player)) return;
-        String title = e.getView().getTitle();
+        var holder = e.getInventory().getHolder();
 
-        if (title.equals(MAIN_TITLE)) {
+        if (holder instanceof MainMenuHolder) {
             e.setCancelled(true);
             int slot = e.getRawSlot();
             if (slot == 19) openCategoryMenu(player, CosmeticType.FRAME);
@@ -173,7 +204,7 @@ public class CosmeticsMenu implements Listener {
                 player.playSound(player.getLocation(), Sound.BLOCK_CHEST_CLOSE, 0.5f, 1.0f);
                 openMainMenu(player);
             }
-        } else if (title.startsWith(CATEGORY_TITLE_PREFIX)) {
+        } else if (holder instanceof CategoryMenuHolder catHolder) {
             e.setCancelled(true);
             int slot = e.getRawSlot();
             if (slot == 36) {
@@ -181,15 +212,7 @@ public class CosmeticsMenu implements Listener {
                 return;
             }
 
-            String catName = title.replace(CATEGORY_TITLE_PREFIX, "").trim();
-            CosmeticType type = null;
-            for (CosmeticType t : CosmeticType.values()) {
-                if (t.getDisplayName().equalsIgnoreCase(catName)) {
-                    type = t;
-                    break;
-                }
-            }
-            if (type == null) return;
+            CosmeticType type = catHolder.getType();
 
             if (slot == 40) {
                 PlayerCosmeticProfile profile = cosmeticManager.getProfile(player.getUniqueId());
@@ -227,6 +250,7 @@ public class CosmeticsMenu implements Listener {
             }
         }
     }
+
 
     private String getEquippedName(CosmeticType type, String id) {
         if (id == null || id.equalsIgnoreCase("none")) return "None";

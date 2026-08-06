@@ -20,7 +20,9 @@ public class ChatDisplayConfig {
     private MathEvaluator.Expression forwardDistance;
     private MathEvaluator.Expression leftOffset;
     private MathEvaluator.Expression verticalOffset;
+    private MathEvaluator.Expression nameGap;
     private MathEvaluator.Expression lineSpacing;
+    private MathEvaluator.Expression lineHeight;
     private MathEvaluator.Expression messageGap;
 
     // Mathematical Layout Offsets
@@ -43,6 +45,7 @@ public class ChatDisplayConfig {
     private MathEvaluator.Expression headScale;
     private MathEvaluator.Expression headLeftOffset;
     private MathEvaluator.Expression headVerticalOffset;
+    private MathEvaluator.Expression headHorizontalOffset;
     private MathEvaluator.Expression backgroundOpacity;
     
     private String nameFormat = "{player}";
@@ -57,8 +60,17 @@ public class ChatDisplayConfig {
     private float soundVolume = 1.0f;
     private MathEvaluator.Expression soundPitch;
 
+    // Layout Alignment
+    private String layoutAlignment = "LEFT";
+    private String messageAlignTo = "NAME";
+    private MathEvaluator.Expression headToNameGap;
+    private boolean fillLineWidth = false;
+    private int paddingX = 0;
+    private int paddingY = 0;
+
     // Head Model Toggle
     private String headModelType = "2D_HALF_BODY";
+
 
     // Performance
     private int updateTicks = 1;
@@ -72,11 +84,14 @@ public class ChatDisplayConfig {
         displayMode = config.getString("chat-display.display-mode", "ALWAYS");
         stillTimeTicks = config.getInt("chat-display.still-time-ticks", 5);
 
+
         forwardDistance = loadExpr(config, "chat-display.forward-distance", "5.0");
         leftOffset = loadExpr(config, "chat-display.left-offset", "-2.5");
         verticalOffset = loadExpr(config, "chat-display.vertical-offset", "-0.2");
-        lineSpacing = loadExpr(config, "chat-display.line-spacing", "0.12");
-        messageGap = loadExpr(config, "chat-display.message-gap", "0.01");
+        nameGap = loadExpr(config, "chat-display.name-gap", "0.0");
+        lineSpacing = loadExpr(config, "chat-display.line-spacing", "0.0");
+        lineHeight = loadExpr(config, "chat-display.line-height", "0.225");
+        messageGap = loadExpr(config, "chat-display.message-gap", "0.0");
 
         mathOffsetsRight = loadExpr(config, "chat-display.math-offset-right", "0");
         mathOffsetsUp = loadExpr(config, "chat-display.math-offset-up", "0");
@@ -94,12 +109,20 @@ public class ChatDisplayConfig {
         headScale = loadExpr(config, "chat-display.head-scale", "0.35");
         headLeftOffset = loadExpr(config, "chat-display.head-left-offset", "0.28");
         headVerticalOffset = loadExpr(config, "chat-display.head-vertical-offset", "0.06");
+        headHorizontalOffset = loadExpr(config, "chat-display.head-horizontal-offset", "0.0");
         backgroundOpacity = loadExpr(config, "chat-display.background-opacity", "80");
         
+        layoutAlignment = config.getString("chat-display.layout-alignment", "LEFT").toUpperCase();
+        messageAlignTo = config.getString("chat-display.message-align-to", "NAME").toUpperCase();
+        headToNameGap = loadExpr(config, "chat-display.head-to-name-gap", "0.02");
+        fillLineWidth = config.getBoolean("chat-display.fill-line-width", false);
+        paddingX = config.getInt("chat-display.padding-x", 0);
+        paddingY = config.getInt("chat-display.padding-y", 0);
+
         nameFormat = config.getString("chat-display.name-format", "{player}");
         messageFormat = config.getString("chat-display.message-format", "{message}");
-        nameAlignment = config.getString("chat-display.name-alignment", "LEFT").toUpperCase();
-        messageAlignment = config.getString("chat-display.message-alignment", "LEFT").toUpperCase();
+        nameAlignment = config.getString("chat-display.name-alignment", layoutAlignment).toUpperCase();
+        messageAlignment = config.getString("chat-display.message-alignment", layoutAlignment).toUpperCase();
         nameColor = config.getString("chat-display.name-color", "#FFFF55");
         messageColor = config.getString("chat-display.message-color", "#FFFFFF");
 
@@ -128,8 +151,15 @@ public class ChatDisplayConfig {
     public double getForwardDistance(double i, double t, double l, double r) { return forwardDistance.evaluate(i, t, l, r); }
     public double getLeftOffset(double i, double t, double l, double r) { return leftOffset.evaluate(i, t, l, r); }
     public double getVerticalOffset(double i, double t, double l, double r) { return verticalOffset.evaluate(i, t, l, r); }
+    public double getNameGap(double i, double t, double l, double r) { return nameGap.evaluate(i, t, l, r); }
     public double getLineSpacing(double i, double t, double l, double r) { return lineSpacing.evaluate(i, t, l, r); }
+    public double getLineHeight(double i, double t, double l, double r) { return lineHeight.evaluate(i, t, l, r); }
     public double getMessageGap(double i, double t, double l, double r) { return messageGap.evaluate(i, t, l, r); }
+    public double getHeadToNameGap(double i, double t, double l, double r) { return headToNameGap.evaluate(i, t, l, r); }
+    public boolean isFillLineWidth() { return fillLineWidth; }
+    public int getPaddingX() { return paddingX; }
+    public int getPaddingY() { return paddingY; }
+
 
     public double getMathOffsetRight(double i, double t, double l, double r) { return mathOffsetsRight.evaluate(i, t, l, r); }
     public double getMathOffsetUp(double i, double t, double l, double r) { return mathOffsetsUp.evaluate(i, t, l, r); }
@@ -147,8 +177,11 @@ public class ChatDisplayConfig {
     public float getHeadScale(double i, double t, double l, double r) { return (float) headScale.evaluate(i, t, l, r); }
     public double getHeadLeftOffset(double i, double t, double l, double r) { return headLeftOffset.evaluate(i, t, l, r); }
     public double getHeadVerticalOffset(double i, double t, double l, double r) { return headVerticalOffset.evaluate(i, t, l, r); }
+    public double getHeadHorizontalOffset(double i, double t, double l, double r) { return headHorizontalOffset.evaluate(i, t, l, r); }
     public int getBackgroundOpacity(double i, double t, double l, double r) { return (int) backgroundOpacity.evaluate(i, t, l, r); }
 
+    public String getLayoutAlignment() { return layoutAlignment; }
+    public String getMessageAlignTo() { return messageAlignTo; }
     public String getNameFormat() { return nameFormat; }
     public String getMessageFormat() { return messageFormat; }
     public String getNameAlignment() { return nameAlignment; }
@@ -163,4 +196,5 @@ public class ChatDisplayConfig {
     public String getHeadModelType() { return headModelType; }
 
     public int getUpdateTicks() { return updateTicks; }
+
 }

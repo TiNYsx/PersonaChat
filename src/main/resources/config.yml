@@ -31,17 +31,45 @@ chat-display:
   still-time-ticks: 5
 
   # ============================================
-  # POSITIONING
+  # LAYOUT ALIGNMENT
+  # ============================================
+  # Overall chat layout alignment:
+  # - LEFT: Head is on the left, chat card extends to the right!
+  # - RIGHT: Head is on the right, chat card extends to the left!
+  # - CENTER: Chat card is centered, head is placed beside it!
+  layout-alignment: "LEFT"
+
+  # Horizontal gap between player avatar/head and the chat card (blocks)
+  head-to-name-gap: 0.02
+
+  # Whether to fill each chat line with spaces up to 'line-length' width
+  # - false: The chat bubble hugs the text dynamically
+  # - true: Pads each line with spaces to create a uniform, full-width chat card!
+  fill-line-width: true
+
+  # Inner padding of the chat card (in space characters)
+  # padding-x: Horizontal padding (left and right) inside the card
+  # padding-y: Vertical padding (top and bottom empty lines) inside the card
+  padding-x: 1
+  padding-y: 0
+
+
+  # ============================================
+  # POSITIONING & SPACING
   # ============================================
   forward-distance: 0.5
   left-offset: 0
   vertical-offset: 0
 
-  # Vertical spacing between text lines within a message (blocks)
-  line-spacing: 0
+  # Gap between separate chat messages (blocks)
+  # Set to 0 to make adjacent messages touch/contact each other seamlessly!
+  message-gap: 0.0
 
-  # Extra gap between separate messages (blocks)
-  message-gap: 0.1
+  # Line height multiplier for each line in the text card (blocks per unit text-scale)
+  # Default is 0.225 (vanilla Minecraft 9 font pixels * 0.025 block scale)
+  line-height: "0.225"
+
+
 
   # ============================================
   # MATHEMATICAL LAYOUT (ADVANCED)
@@ -76,23 +104,21 @@ chat-display:
   # Scale of the player avatar/head
   head-scale: "0.1"
 
-  # How far left the avatar is offset from the text (blocks)
-  head-left-offset: "0.1"
+  # Vertical fine-tuning offset for the head (in blocks, supports math expressions: i, t, l, r)
+  # Positive moves head upwards, negative moves head downwards
+  head-vertical-offset: "0.0"
 
-  # Vertical offset of the avatar relative to the text line (blocks)
-  head-vertical-offset: "0"
+  # Horizontal fine-tuning offset for the head (in blocks, supports math expressions: i, t, l, r)
+  # Positive moves head rightwards, negative moves head leftwards
+  head-horizontal-offset: "0.0"
 
   # Background opacity behind text (0 = transparent, 255 = fully opaque)
   background-opacity: "80"
 
   # Format for Name and Message Display.
   # Supports PlaceholderAPI, Font Glyphs/Unicode, and {badge}, {player}, {message}!
-  name-format: "{badge}%player_level% {player}"
+  name-format: "{badge} {player}"
   message-format: "{message}"
-
-  # Text Alignment (LEFT, CENTER, RIGHT)
-  name-alignment: "LEFT"
-  message-alignment: "LEFT"
 
   # Player default name & message colors (hex color code)
   name-color: "#FFFF55"

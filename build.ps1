@@ -19,9 +19,15 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "Creating PersonaChat-1.0.jar..."
     Copy-Item "src\main\resources\*" -Destination "build\classes\" -Recurse -Force
     jar cvf "PersonaChat-1.0.jar" -C build\classes .
-    Copy-Item "PersonaChat-1.0.jar" -Destination "PersonaChat-1.1.0.jar" -Force
-    Copy-Item "PersonaChat-1.0.jar" -Destination "CustomEmotePlugin-1.0.0.jar" -Force
+    
+    $serverPlugins = "C:\Users\tinysx\Desktop\work\26.1\plugins"
+    if (Test-Path $serverPlugins) {
+        Copy-Item "PersonaChat-1.0.jar" -Destination "$serverPlugins\PersonaChat-1.0.jar" -Force
+        Write-Host "Deployed PersonaChat-1.0.jar to server plugins directory!"
+    }
     Write-Host "SUCCESS: PersonaChat-1.0.jar built successfully!"
 } else {
     Write-Host "Compilation failed."
 }
+
+

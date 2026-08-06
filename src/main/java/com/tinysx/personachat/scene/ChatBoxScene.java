@@ -18,13 +18,11 @@ public class ChatBoxScene extends SceneNode {
     private final double randomValue;
 
     private AvatarNode avatarNode;
-    private TextNode nameNode;
-    private TextNode msgNode;
+    private TextNode cardNode;
+    private TextNode bgCardNode;
 
-    private int nameEstimatedLines = 1;
-    private int namePixelWidth = 0;
-    private int msgEstimatedLines = 1;
-    private int msgPixelWidth = 0;
+    private int totalLines = 1;
+    private int pixelWidth = 0;
 
     public ChatBoxScene(ChatMessage message) {
         this.message = message;
@@ -38,16 +36,41 @@ public class ChatBoxScene extends SceneNode {
         if (avatarNode != null) addChild(avatarNode);
     }
 
+    public void setCardNode(TextNode cardNode) {
+        if (this.cardNode != null) removeChild(this.cardNode);
+        this.cardNode = cardNode;
+        if (cardNode != null) addChild(cardNode);
+    }
+
+    public void setBgCardNode(TextNode bgCardNode) {
+        if (this.bgCardNode != null) removeChild(this.bgCardNode);
+        this.bgCardNode = bgCardNode;
+        if (bgCardNode != null) addChild(bgCardNode);
+    }
+
+    public TextNode getBgCardNode() {
+        return bgCardNode;
+    }
+
+    // Backwards-compatibility aliases
     public void setNameNode(TextNode nameNode) {
-        if (this.nameNode != null) removeChild(this.nameNode);
-        this.nameNode = nameNode;
-        if (nameNode != null) addChild(nameNode);
+        setCardNode(nameNode);
     }
 
     public void setMsgNode(TextNode msgNode) {
-        if (this.msgNode != null) removeChild(this.msgNode);
-        this.msgNode = msgNode;
-        if (msgNode != null) addChild(msgNode);
+        setCardNode(msgNode);
+    }
+
+    public TextNode getCardNode() {
+        return cardNode;
+    }
+
+    public TextNode getNameNode() {
+        return cardNode;
+    }
+
+    public TextNode getMsgNode() {
+        return cardNode;
     }
 
     @Override
@@ -63,14 +86,19 @@ public class ChatBoxScene extends SceneNode {
     protected void onDestroy() {
     }
 
-    public double calculateTotalHeight(double lineSpacing, float textScale) {
-        double nameHeight = (nameNode != null) ? (nameEstimatedLines * 0.25 * textScale) : 0;
-        double msgHeight = (msgNode != null) ? (msgEstimatedLines * 0.25 * textScale) : 0;
-        double total = nameHeight + msgHeight;
-        if (nameNode != null && msgNode != null) {
-            total += lineSpacing;
-        }
-        return total;
+    public double calculateTotalHeight(float textScale, float headScale, double lineHeight, boolean is3DBlock) {
+        double textHeight = (cardNode != null && totalLines > 0) ? ((totalLines * lineHeight + 0.025) * textScale) : 0;
+        double avatarFactor = is3DBlock ? 1.0 : 0.5;
+        double headerHeight = (avatarNode != null) ? (headScale * avatarFactor) : 0;
+        return Math.max(headerHeight, textHeight);
+    }
+
+    public double calculateTotalHeight(float textScale, float headScale, double lineHeight) {
+        return calculateTotalHeight(textScale, headScale, lineHeight, false);
+    }
+
+    public double calculateTotalHeight(float textScale, float headScale) {
+        return calculateTotalHeight(textScale, headScale, 0.225, false);
     }
 
     public ChatMessage getMessage() {
@@ -89,43 +117,29 @@ public class ChatBoxScene extends SceneNode {
         return avatarNode;
     }
 
-    public TextNode getNameNode() {
-        return nameNode;
+    public int getTotalLines() {
+        return totalLines;
     }
 
-    public TextNode getMsgNode() {
-        return msgNode;
+    public void setTotalLines(int totalLines) {
+        this.totalLines = totalLines;
     }
 
-    public int getNameEstimatedLines() {
-        return nameEstimatedLines;
+    public int getPixelWidth() {
+        return pixelWidth;
     }
 
-    public void setNameEstimatedLines(int nameEstimatedLines) {
-        this.nameEstimatedLines = nameEstimatedLines;
+    public void setPixelWidth(int pixelWidth) {
+        this.pixelWidth = pixelWidth;
     }
 
-    public int getNamePixelWidth() {
-        return namePixelWidth;
-    }
-
-    public void setNamePixelWidth(int namePixelWidth) {
-        this.namePixelWidth = namePixelWidth;
-    }
-
-    public int getMsgEstimatedLines() {
-        return msgEstimatedLines;
-    }
-
-    public void setMsgEstimatedLines(int msgEstimatedLines) {
-        this.msgEstimatedLines = msgEstimatedLines;
-    }
-
-    public int getMsgPixelWidth() {
-        return msgPixelWidth;
-    }
-
-    public void setMsgPixelWidth(int msgPixelWidth) {
-        this.msgPixelWidth = msgPixelWidth;
-    }
+    // Backwards-compatibility helpers
+    public int getNameEstimatedLines() { return totalLines; }
+    public void setNameEstimatedLines(int lines) { this.totalLines = lines; }
+    public int getNamePixelWidth() { return pixelWidth; }
+    public void setNamePixelWidth(int width) { this.pixelWidth = width; }
+    public int getMsgEstimatedLines() { return totalLines; }
+    public void setMsgEstimatedLines(int lines) { this.totalLines = lines; }
+    public int getMsgPixelWidth() { return pixelWidth; }
+    public void setMsgPixelWidth(int width) { this.pixelWidth = width; }
 }

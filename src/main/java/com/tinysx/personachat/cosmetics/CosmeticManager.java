@@ -132,6 +132,32 @@ public class CosmeticManager {
         PlayerCosmeticProfile profile = profiles.get(uuid);
         if (profile == null) return;
 
+        final String frame = profile.getEquippedFrame();
+        final String badge = profile.getEquippedBadge();
+        final String bubble = profile.getEquippedBubble();
+        final String color = profile.getEquippedColor();
+
+        // Asynchronous disk write to avoid stalling the main server thread
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            File file = new File(playerDataFolder, uuid.toString() + ".yml");
+            YamlConfiguration yaml = new YamlConfiguration();
+            yaml.set("equipped.frame", frame);
+            yaml.set("equipped.badge", badge);
+            yaml.set("equipped.bubble", bubble);
+            yaml.set("equipped.color", color);
+
+            try {
+                yaml.save(file);
+            } catch (IOException e) {
+                plugin.getLogger().warning("Failed to save player cosmetic data for " + uuid + ": " + e.getMessage());
+            }
+        });
+    }
+
+    public void saveProfileSync(UUID uuid) {
+        PlayerCosmeticProfile profile = profiles.get(uuid);
+        if (profile == null) return;
+
         File file = new File(playerDataFolder, uuid.toString() + ".yml");
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set("equipped.frame", profile.getEquippedFrame());
@@ -147,15 +173,16 @@ public class CosmeticManager {
     }
 
     public void unloadProfile(UUID uuid) {
-        saveProfile(uuid);
+        saveProfileSync(uuid);
         profiles.remove(uuid);
     }
 
     public void saveAll() {
         for (UUID uuid : profiles.keySet()) {
-            saveProfile(uuid);
+            saveProfileSync(uuid);
         }
     }
+
 
     private void generateDefaultCosmeticFiles() {
         generateDefaultFile(CosmeticType.FRAME, new File(cosmeticsFolder, "frames.yml"));

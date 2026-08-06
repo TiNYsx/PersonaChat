@@ -19,11 +19,14 @@ public class TextNode extends SceneNode {
     private TextDisplay textDisplay;
     private float textBaseScale = 0.4f;
     private int backgroundOpacity = 80;
+    private int targetTeleportDuration = 1;
+    private boolean initialized = false;
 
-    public TextNode(TextDisplay textDisplay, float textBaseScale, int backgroundOpacity) {
+    public TextNode(TextDisplay textDisplay, float textBaseScale, int backgroundOpacity, int targetTeleportDuration) {
         this.textDisplay = textDisplay;
-        this.textBaseScale = textBaseScale;
+        this.textBaseScale = 1.0f;
         this.backgroundOpacity = backgroundOpacity;
+        this.targetTeleportDuration = targetTeleportDuration;
     }
 
     @Override
@@ -38,11 +41,18 @@ public class TextNode extends SceneNode {
             trans.getScale().set(s, s, s);
             textDisplay.setTransformation(trans);
 
+            if (!initialized) {
+                initialized = true;
+                textDisplay.setTeleportDuration(targetTeleportDuration);
+                textDisplay.setInterpolationDuration(targetTeleportDuration);
+            }
+
             if (backgroundOpacity >= 0) {
                 textDisplay.setBackgroundColor(Color.fromARGB(backgroundOpacity, 0, 0, 0));
             }
         }
     }
+
 
     @Override
     protected void onSetVisible(boolean visible, Player viewer, JavaPlugin plugin) {

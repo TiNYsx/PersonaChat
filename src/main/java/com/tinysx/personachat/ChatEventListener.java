@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -21,12 +22,15 @@ public class ChatEventListener implements Listener {
         this.displayManager = displayManager;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         String rawMsg = PlainTextComponentSerializer.plainText().serialize(event.message());
 
         ChatMessage chatMsg = new ChatMessage(player.getName(), player.getUniqueId(), rawMsg);
+
+        // Clear viewers so vanilla chat doesn't show up in the chatbox
+        event.viewers().clear();
 
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             displayManager.broadcastMessage(chatMsg);
@@ -56,6 +60,15 @@ public class ChatEventListener implements Listener {
     }
 
     @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        PlayerChatDisplay display = displayManager.getDisplay(event.getPlayer().getUniqueId());
+        if (display != null && display.isEnabled()) {
+            display.hideAll();
+            display.updatePositions(event.getPlayer());
+        }
+    }
+
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         displayManager.onPlayerJoin(event.getPlayer());
     }
@@ -65,3 +78,4 @@ public class ChatEventListener implements Listener {
         displayManager.onPlayerQuit(event.getPlayer());
     }
 }
+

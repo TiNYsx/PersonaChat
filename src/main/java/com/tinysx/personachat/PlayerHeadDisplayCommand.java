@@ -32,6 +32,11 @@ public class PlayerHeadDisplayCommand implements CommandExecutor {
             return true;
         }
 
+        if (!player.hasPermission("personachat.admin") && !player.isOp()) {
+            player.sendMessage("§cYou do not have permission to use this command.");
+            return true;
+        }
+
         if (args.length > 0 && args[0].equalsIgnoreCase("clear")) {
             ItemDisplay existing = spawnedDisplays.remove(player.getUniqueId());
             if (existing != null && !existing.isDead()) {
@@ -69,6 +74,7 @@ public class PlayerHeadDisplayCommand implements CommandExecutor {
             entity.setItemStack(head);
             entity.setBillboard(Display.Billboard.CENTER);
             entity.setItemDisplayTransform(is2D ? ItemDisplay.ItemDisplayTransform.FIXED : ItemDisplay.ItemDisplayTransform.HEAD);
+            entity.setPersistent(false); // CRITICAL: Prevent saving temporary entities to world chunk NBT
 
             Transformation transformation = entity.getTransformation();
             if (is2D) {
@@ -83,6 +89,7 @@ public class PlayerHeadDisplayCommand implements CommandExecutor {
         spawnedDisplays.put(player.getUniqueId(), display);
         player.sendMessage("§aSpawned " + (is2D ? "§b[2D Half-Body]" : "§e[3D Head]") + " §adisplay for §e" + targetName + "§a!");
         return true;
+
     }
 
     public static void cleanupAll() {

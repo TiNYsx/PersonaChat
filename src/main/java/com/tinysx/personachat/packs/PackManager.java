@@ -124,6 +124,15 @@ public class PackManager {
                     frameOffsetY = settings.getDouble("offset-y", 0.0);
                     assetRef = settings.getString("asset", "");
 
+                    if (type == CosmeticType.FRAME) {
+                        if (format.isEmpty() && !assetRef.isEmpty()) {
+                            PackAsset fa = pack.getAsset(assetRef);
+                            if (fa != null) {
+                                format = fa.getFormatted();
+                            }
+                        }
+                    }
+
                     if (type == CosmeticType.BUBBLE) {
                         String mode = settings.getString("mode", "IMAGE");
                         String singleAsset = settings.getString("single-line-asset", "");

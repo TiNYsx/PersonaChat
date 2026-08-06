@@ -131,9 +131,19 @@ public class MathEvaluator {
         return tokens;
     }
 
+    public static double sanitize(double val) {
+        if (Double.isNaN(val) || Double.isInfinite(val)) {
+            return 0.0;
+        }
+        // Clamp extreme math coordinates to a safe range to prevent physics/packet engine exceptions
+        return Math.max(-1000.0, Math.min(1000.0, val));
+    }
+
     private static class Parser {
         private final List<Token> tokens;
         private int pos = 0;
+        private static final int MAX_PARSE_DEPTH = 32;
+        private int currentDepth = 0;
 
         Parser(List<Token> tokens) {
             this.tokens = tokens;
@@ -150,21 +160,30 @@ public class MathEvaluator {
         }
 
         Expression parseExpression() {
-            Expression left = parseTerm();
-
-            while (peek() != null && (peek().type == TokenType.PLUS || peek().type == TokenType.MINUS)) {
-                TokenType op = next().type;
-                Expression right = parseTerm();
-                Expression prevLeft = left;
-
-                if (op == TokenType.PLUS) {
-                    left = (i, t, l, r) -> prevLeft.evaluate(i, t, l, r) + right.evaluate(i, t, l, r);
-                } else {
-                    left = (i, t, l, r) -> prevLeft.evaluate(i, t, l, r) - right.evaluate(i, t, l, r);
-                }
+            if (++currentDepth > MAX_PARSE_DEPTH) {
+                currentDepth--;
+                return (i, t, l, r) -> 0.0;
             }
 
-            return left;
+            try {
+                Expression left = parseTerm();
+
+                while (peek() != null && (peek().type == TokenType.PLUS || peek().type == TokenType.MINUS)) {
+                    TokenType op = next().type;
+                    Expression right = parseTerm();
+                    Expression prevLeft = left;
+
+                    if (op == TokenType.PLUS) {
+                        left = (i, t, l, r) -> sanitize(prevLeft.evaluate(i, t, l, r) + right.evaluate(i, t, l, r));
+                    } else {
+                        left = (i, t, l, r) -> sanitize(prevLeft.evaluate(i, t, l, r) - right.evaluate(i, t, l, r));
+                    }
+                }
+
+                return left;
+            } finally {
+                currentDepth--;
+            }
         }
 
         private Expression parseTerm() {
@@ -176,16 +195,16 @@ public class MathEvaluator {
                 Expression prevLeft = left;
 
                 if (op == TokenType.MUL) {
-                    left = (i, t, l, r) -> prevLeft.evaluate(i, t, l, r) * right.evaluate(i, t, l, r);
+                    left = (i, t, l, r) -> sanitize(prevLeft.evaluate(i, t, l, r) * right.evaluate(i, t, l, r));
                 } else if (op == TokenType.DIV) {
                     left = (i, t, l, r) -> {
                         double divisor = right.evaluate(i, t, l, r);
-                        return divisor == 0 ? 0 : prevLeft.evaluate(i, t, l, r) / divisor;
+                        return divisor == 0 ? 0.0 : sanitize(prevLeft.evaluate(i, t, l, r) / divisor);
                     };
                 } else {
                     left = (i, t, l, r) -> {
                         double divisor = right.evaluate(i, t, l, r);
-                        return divisor == 0 ? 0 : prevLeft.evaluate(i, t, l, r) % divisor;
+                        return divisor == 0 ? 0.0 : sanitize(prevLeft.evaluate(i, t, l, r) % divisor);
                     };
                 }
             }
@@ -200,7 +219,7 @@ public class MathEvaluator {
                 next();
                 Expression right = parseFactor();
                 Expression prevLeft = left;
-                left = (i, t, l, r) -> Math.pow(prevLeft.evaluate(i, t, l, r), right.evaluate(i, t, l, r));
+                left = (i, t, l, r) -> sanitize(Math.pow(prevLeft.evaluate(i, t, l, r), right.evaluate(i, t, l, r)));
             }
 
             return left;
@@ -212,7 +231,7 @@ public class MathEvaluator {
 
             if (token.type == TokenType.MINUS) {
                 Expression inner = parsePrimary();
-                return (i, t, l, r) -> -inner.evaluate(i, t, l, r);
+                return (i, t, l, r) -> sanitize(-inner.evaluate(i, t, l, r));
             }
 
             if (token.type == TokenType.PLUS) {
@@ -220,14 +239,14 @@ public class MathEvaluator {
             }
 
             if (token.type == TokenType.NUMBER) {
-                double val = token.numberValue;
+                double val = sanitize(token.numberValue);
                 return (i, t, l, r) -> val;
             }
 
-            if (token.type == TokenType.VAR_I) return (i, t, l, r) -> i;
-            if (token.type == TokenType.VAR_T) return (i, t, l, r) -> t;
-            if (token.type == TokenType.VAR_L) return (i, t, l, r) -> l;
-            if (token.type == TokenType.VAR_R) return (i, t, l, r) -> r;
+            if (token.type == TokenType.VAR_I) return (i, t, l, r) -> sanitize(i);
+            if (token.type == TokenType.VAR_T) return (i, t, l, r) -> sanitize(t);
+            if (token.type == TokenType.VAR_L) return (i, t, l, r) -> sanitize(l);
+            if (token.type == TokenType.VAR_R) return (i, t, l, r) -> sanitize(r);
 
             if (token.type == TokenType.LPAREN) {
                 Expression inner = parseExpression();
@@ -245,15 +264,15 @@ public class MathEvaluator {
                 if (peek() != null && peek().type == TokenType.RPAREN) next();
 
                 return switch (fType) {
-                    case FUNC_SQRT -> (i, t, l, r) -> Math.sqrt(Math.max(0, arg.evaluate(i, t, l, r)));
-                    case FUNC_SIN -> (i, t, l, r) -> Math.sin(arg.evaluate(i, t, l, r));
-                    case FUNC_COS -> (i, t, l, r) -> Math.cos(arg.evaluate(i, t, l, r));
-                    case FUNC_TAN -> (i, t, l, r) -> Math.tan(arg.evaluate(i, t, l, r));
-                    case FUNC_ABS -> (i, t, l, r) -> Math.abs(arg.evaluate(i, t, l, r));
-                    case FUNC_FLOOR -> (i, t, l, r) -> Math.floor(arg.evaluate(i, t, l, r));
-                    case FUNC_CEIL -> (i, t, l, r) -> Math.ceil(arg.evaluate(i, t, l, r));
-                    case FUNC_ROUND -> (i, t, l, r) -> (double) Math.round(arg.evaluate(i, t, l, r));
-                    case FUNC_LOG -> (i, t, l, r) -> Math.log(Math.max(0.0001, arg.evaluate(i, t, l, r)));
+                    case FUNC_SQRT -> (i, t, l, r) -> sanitize(Math.sqrt(Math.max(0, arg.evaluate(i, t, l, r))));
+                    case FUNC_SIN -> (i, t, l, r) -> sanitize(Math.sin(arg.evaluate(i, t, l, r)));
+                    case FUNC_COS -> (i, t, l, r) -> sanitize(Math.cos(arg.evaluate(i, t, l, r)));
+                    case FUNC_TAN -> (i, t, l, r) -> sanitize(Math.tan(arg.evaluate(i, t, l, r)));
+                    case FUNC_ABS -> (i, t, l, r) -> sanitize(Math.abs(arg.evaluate(i, t, l, r)));
+                    case FUNC_FLOOR -> (i, t, l, r) -> sanitize(Math.floor(arg.evaluate(i, t, l, r)));
+                    case FUNC_CEIL -> (i, t, l, r) -> sanitize(Math.ceil(arg.evaluate(i, t, l, r)));
+                    case FUNC_ROUND -> (i, t, l, r) -> sanitize((double) Math.round(arg.evaluate(i, t, l, r)));
+                    case FUNC_LOG -> (i, t, l, r) -> sanitize(Math.log(Math.max(0.0001, arg.evaluate(i, t, l, r))));
                     default -> (i, t, l, r) -> 0.0;
                 };
             }
@@ -267,9 +286,9 @@ public class MathEvaluator {
                 if (peek() != null && peek().type == TokenType.RPAREN) next();
 
                 if (fType == TokenType.FUNC_MIN) {
-                    return (i, t, l, r) -> Math.min(arg1.evaluate(i, t, l, r), arg2.evaluate(i, t, l, r));
+                    return (i, t, l, r) -> sanitize(Math.min(arg1.evaluate(i, t, l, r), arg2.evaluate(i, t, l, r)));
                 } else {
-                    return (i, t, l, r) -> Math.max(arg1.evaluate(i, t, l, r), arg2.evaluate(i, t, l, r));
+                    return (i, t, l, r) -> sanitize(Math.max(arg1.evaluate(i, t, l, r), arg2.evaluate(i, t, l, r)));
                 }
             }
 
@@ -277,3 +296,4 @@ public class MathEvaluator {
         }
     }
 }
+
