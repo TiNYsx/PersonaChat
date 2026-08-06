@@ -34,6 +34,9 @@ public class PersonaChat extends JavaPlugin {
         packManager = new PackManager(this, cosmeticManager);
         packManager.loadAll();
 
+        // Auto-generate Core Shader & Font Resource Pack if needed
+        com.tinysx.personachat.packs.ResourcePackGenerator.generate(this);
+
         cosmeticsMenu = new CosmeticsMenu(cosmeticManager);
         getServer().getPluginManager().registerEvents(cosmeticsMenu, this);
 

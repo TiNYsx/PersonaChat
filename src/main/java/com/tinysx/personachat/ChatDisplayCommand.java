@@ -64,6 +64,15 @@ public class ChatDisplayCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage("§a[PersonaChat] Configuration, cosmetics, and modular packs reloaded successfully!");
                 return true;
             }
+            case "resourcepack", "pack" -> {
+                if (!sender.hasPermission("personachat.admin") && !sender.isOp()) {
+                    sender.sendMessage("§cYou do not have permission to export the resourcepack.");
+                    return true;
+                }
+                com.tinysx.personachat.packs.ResourcePackGenerator.generate(PersonaChat.getInstance());
+                sender.sendMessage("§a[PersonaChat] Resource pack & core shaders exported to: §eplugins/PersonaChat/PersonaChat_ResourcePack.zip");
+                return true;
+            }
             case "toggle" -> {
                 if (!(sender instanceof Player player)) {
                     sender.sendMessage("§cThis command can only be run by a player.");
@@ -177,13 +186,14 @@ public class ChatDisplayCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage("§e/pc on §7/ §e/pc off §7- Enable or disable floating chat");
         sender.sendMessage("§e/pc equip <category> <id> §7- Equip a specific cosmetic");
         sender.sendMessage("§e/pc unequip <category|all> §7- Unequip a cosmetic");
+        sender.sendMessage("§e/pc resourcepack §7- Auto-generate/export the Shader & Font ResourcePack");
         sender.sendMessage("§e/pc reload §7- Reload configuration, cosmetics, and packs");
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
-            List<String> subs = Arrays.asList("menu", "toggle", "on", "off", "equip", "unequip", "reload");
+            List<String> subs = Arrays.asList("menu", "toggle", "on", "off", "equip", "unequip", "resourcepack", "reload");
             return filter(subs, args[0]);
         }
         if (args.length == 2) {
